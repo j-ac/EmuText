@@ -5,11 +5,18 @@ import re
 import sys
 import argparse
 import os
+from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('resources_path', action='store', help="A directory containing the following:\n1. lua script to dump text\n2. The output of that lua script (does not have to exist at run time)\n3. An encodings.tbl 4. If diacritic encodings are used, a diacritics.txt file")
 args = parser.parse_args()
+
+# Retains information necessary for interpreting diacritic characters when they
+# act as modifiers on a "base character" in a seperate byte. eg ゛て ->　で
+class DiacriticEncoding(NamedTuple):
+    dictionary: dict # eg AX+BC=ぴ   Format: diacritic_hex+base_character=base_with_diacritic_literal   NO SPACES!
+    offset: int # number of bytes the diacritic is found from the "base" character. eg -32 for 32 bytes before, or +1 for one byte after.
 
 async def run_server(websocket):
     print("Connection established with web client")
@@ -18,34 +25,41 @@ async def run_server(websocket):
     # === INTERPRET ENCODINGS IN THE RESOURCE FOLDER ====
     # ===================================================
     encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl"))
-    diacritic_offset, diacritic_encoding = diacritic_table_to_dict(os.path.join(args.resources_path, "diacritics.txt"))
+
+    # Diacritics
+    # More than one encoding may be used in the same game
+    diacritics_dir = os.path.join(args.resources_path, "diacritics")
+    diacritic_encoding_list = []
+    for encoding_file in os.listdir(diacritics_dir):
+        d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
+        diacritic_encoding_list.append(d_table)
 
     message = ""
     while True:
-        # ============================
-        # === GENERATE NEW MESSAGE ===
-        # ============================
-
+        # === OPEN DUMP FILE ===
         with open(os.path.join(args.resources_path, "dump.txt")) as f:
             dump = f.read()
+            # === CHANGE DUMP FORMAT === 
             dump_as_nums = lua_table_to_nums(dump)
 
-        new_message = generate_text(encoding, diacritic_encoding, diacritic_offset, dump_as_nums)
+        # === GENERATE MESSAGE ===
+        new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums)
+
+        # === SEND OR SKIP MESSAGE ===
         if new_message == message:
             continue # Don't send repeating messages
         else: 
             message = new_message
-            if args.verbose: print(message + '\n')
 
         if message == "": 
             continue #must be after the preceeding else block otherwise the message can never be updated after init
+ 
+        if args.verbose:
+            print("Sending message")
+            print(message + '\n')
 
-        # ====================
         # === SEND MESSAGE ===
-        # ====================
-        if args.verbose: print("Sending message")
         await websocket.send(message)
-
         print("Message sent")
         await asyncio.sleep(0.5)
 
@@ -76,7 +90,7 @@ def diacritic_table_to_dict(path_to_diacritic_table):
 
         dictionary[diacritic + without_diacritic] = with_diacritic 
 
-    return offset, dictionary
+    return DiacriticEncoding(dictionary, offset)
 
     
 
@@ -102,31 +116,42 @@ def thingy_table_to_dict(path_to_thingy_table):
 
     return dictionary
 
-def generate_text(encoding, diacritic_encoding, diacritic_offset, dump):
+# Iterate through the dump and using the known encoding and diacritic rules, return it as a python string.
+def generate_text(encoding, diacritics_list, dump):
     text = ""
     for i, num in enumerate(dump):
         if num not in encoding:
             continue # Scrap junk characters
 
         if encoding[num] == "NEWLINE":
-            text+= '\n'
+            text += '\n'
             continue
 
-        diacritic_candidate_in_boundary = 0 <= i + diacritic_offset < len(dump) # ie the check will not probe out of bounds characters
-        if diacritic_candidate_in_boundary: 
-            diacritic_candidate = dump[i + diacritic_offset]
+        diacritic = generate_diacritic_text(num, i, diacritics_list, dump)
+        if diacritic != "": #ie there was a diacritic
+            text += diacritic
+            continue
 
-            key = "%0.2X" % diacritic_candidate + "%0.2X" % num # hex() produces 0x prefixes, and lowercase letters, which is not how the encodings are expected.
-            if key in diacritic_encoding:
-                text += diacritic_encoding[key]
-                continue
-
+        # Otherwise:
         text += encoding[num]
-
-
-           
+ 
     text = re.sub("\s{2,}", '\n', text) # Long strings of spaces usually encode newlines
     return text
+
+# Check if the character we are looking at matches any of the known diacritic rules, and if it does return that diacritic.
+def generate_diacritic_text(num, num_position, diacritics_list, dump):
+    ret = ""
+    for diacritic_encoding in diacritics_list:
+        diacritic_candidate_in_boundary = 0 <= num_position + diacritic_encoding.offset < len(dump) # ie the check will not probe out of bounds characters
+        if diacritic_candidate_in_boundary: 
+            diacritic_candidate = dump[num_position + diacritic_encoding.offset] # we will check if there is actually a diacritic marker at this position later
+
+            key = "%0.2X" % diacritic_candidate + "%0.2X" % num  # using hex() doesn't match the desired format
+            if key in diacritic_encoding.dictionary: # iff the diacritic_candidate is a diacritic, AND it meaningfully combines with the dump character. Eg ゜and ひ make ぴ
+                ret = diacritic_encoding.dictionary[key]
+
+    return ret
+
 
 
 async def main():
