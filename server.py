@@ -37,7 +37,7 @@ async def run_server(websocket):
     message = ""
     while True:
         # === OPEN DUMP FILE ===
-        with open(os.path.join(args.resources_path, "dump.txt")) as f:
+        with open(os.path.join(args.resources_path, "dump.txt"), encoding="utf-8") as f:
             dump = f.read()
             # === CHANGE DUMP FORMAT === 
             dump_as_nums = lua_table_to_nums(dump)
@@ -74,7 +74,7 @@ def lua_table_to_nums(f):
 # Eg if E5 represents゛ and C3 representsて, then dictionary["E5C3"] -> で  
 def diacritic_table_to_dict(path_to_diacritic_table):
     dictionary = {}
-    table = open(path_to_diacritic_table).read()
+    table = open(path_to_diacritic_table, encoding="utf-8").read()
     lines = table.splitlines()
 
     # Ex first row is OFFSET=-32
@@ -105,7 +105,7 @@ def diacritic_table_to_dict(path_to_diacritic_table):
 # 6B=,
 def thingy_table_to_dict(path_to_thingy_table):
     dictionary = {}
-    table = open(path_to_thingy_table).read()
+    table = open(path_to_thingy_table, encoding="utf-8").read()
     lines = table.splitlines()
 
     for line in lines:
