@@ -19,14 +19,15 @@ class DiacriticEncoding(NamedTuple):
     offset: int # number of bytes the diacritic is found from the "base" character. eg -32 for 32 bytes before, or +1 for one byte after.
 
 async def run_server(websocket):
+    # =============
+    # === SETUP ===
+    # =============
     print("Connection established with web client")
 
-    # ===================================================
     # === INTERPRET ENCODINGS IN THE RESOURCE FOLDER ====
-    # ===================================================
     encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl"))
 
-    # Diacritics
+    # === Diacritics ===
     # More than one encoding may be used in the same game
     diacritics_dir = os.path.join(args.resources_path, "diacritics")
     diacritic_encoding_list = []
@@ -34,13 +35,20 @@ async def run_server(websocket):
         d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
         diacritic_encoding_list.append(d_table)
 
+    # === Initialize the dump ===
+
+    with open(os.path.join(args.resources_path, "dump.txt"), "a") as f:
+        pass # Do nothing. Ensures the file is created if it does not already exist
+        
+    # =================
+    # === MAIN LOOP ===
+    # =================
     message = ""
     while True:
         # === OPEN DUMP FILE ===
         with open(os.path.join(args.resources_path, "dump.txt"), encoding="utf-8") as f:
             dump = f.read()
-            # === CHANGE DUMP FORMAT === 
-            dump_as_nums = lua_table_to_nums(dump)
+            dump_as_nums = lua_table_to_nums(dump) # deserialize
 
         # === GENERATE MESSAGE ===
         new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums)
