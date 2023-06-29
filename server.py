@@ -15,7 +15,7 @@ args = parser.parse_args()
 # Retains information necessary for interpreting diacritic characters when they
 # act as modifiers on a "base character" in a seperate byte. eg ゛て ->　で
 class DiacriticEncoding(NamedTuple):
-    dictionary: dict # eg AX+BC=ぴ   Format: diacritic_hex+base_character=base_with_diacritic_literal   NO SPACES!
+    dictionary: dict # eg AX+BC=ぴ   Format: diacritic_hex+base_character_hex=base_with_diacritic_literal   NO SPACES!
     offset: int # number of bytes the diacritic is found from the "base" character. eg -32 for 32 bytes before, or +1 for one byte after.
 
 async def run_server(websocket):
@@ -27,6 +27,11 @@ async def run_server(websocket):
     # === INTERPRET ENCODINGS IN THE RESOURCE FOLDER ====
     encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl"))
 
+    # === LOAD ARTIFACT DETECTION REGEXES ===
+    with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
+        pass # Ensures file exists
+    artifacts = load_artifact_detection(os.path.join(args.resources_path, "artifacts.txt"))
+
     # === Diacritics ===
     # More than one encoding may be used in the same game
     diacritics_dir = os.path.join(args.resources_path, "diacritics")
@@ -36,9 +41,9 @@ async def run_server(websocket):
         diacritic_encoding_list.append(d_table)
 
     # === Initialize the dump ===
-
     with open(os.path.join(args.resources_path, "dump.txt"), "a") as f:
-        pass # Do nothing. Ensures the file is created if it does not already exist
+        pass # Ensures file exists
+
         
     # =================
     # === MAIN LOOP ===
@@ -61,15 +66,29 @@ async def run_server(websocket):
 
         if message == "": 
             continue #must be after the preceeding else block otherwise the message can never be updated after init
+
+        # === REMOVE ARTIFACTS ===
+        cleaned_message = message # Prevents the next loop detecting a change in the message and acting as if there was a new dump
+        for regex in artifacts:
+            cleaned_message = re.sub(regex, '', cleaned_message) 
  
+        # === SEND MESSAGE ===
         if args.verbose:
             print("Sending message")
-            print(message + '\n')
+            print(cleaned_message + '\n')
 
-        # === SEND MESSAGE ===
-        await websocket.send(message)
+        await websocket.send(cleaned_message)
         print("Message sent")
         await asyncio.sleep(0.5)
+
+
+# Load regexes from artifacts.txt in the game resources folder
+# Substrings matching these regexes will be removed before sending to client
+def load_artifact_detection(path_to_artifacts):
+    artifacts = open(path_to_artifacts, encoding="utf-8").read()
+    lines = artifacts.splitlines()
+    return lines
+
 
 # VBArr's API gives a memory dump as a string of decimal integers eg {243, 195, 11, 1, 0 ....}
 def lua_table_to_nums(f):
