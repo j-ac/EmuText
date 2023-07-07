@@ -27,11 +27,15 @@ async def run_server(websocket):
     # === INTERPRET ENCODINGS IN THE RESOURCE FOLDER ====
     encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl"))
 
+    # === Initialize the dump ===
+    with open(os.path.join(args.resources_path, "dump.txt"), "a") as f:
+        pass # Ensures file exists
+
     # === LOAD ARTIFACT DETECTION REGEXES ===
     with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
         pass # Ensures file exists
     artifacts = load_artifact_detection(os.path.join(args.resources_path, "artifacts.txt"))
-
+    
     # === Diacritics ===
     # More than one encoding may be used in the same game
     diacritics_dir = os.path.join(args.resources_path, "diacritics")
@@ -39,12 +43,7 @@ async def run_server(websocket):
     for encoding_file in os.listdir(diacritics_dir):
         d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
         diacritic_encoding_list.append(d_table)
-
-    # === Initialize the dump ===
-    with open(os.path.join(args.resources_path, "dump.txt"), "a") as f:
-        pass # Ensures file exists
-
-        
+    
     # =================
     # === MAIN LOOP ===
     # =================
@@ -90,7 +89,7 @@ def load_artifact_detection(path_to_artifacts):
     return lines
 
 
-# VBArr's API gives a memory dump as a string of decimal integers eg {243, 195, 11, 1, 0 ....}
+# BizHawk's API gives a memory dump as a string of decimal integers eg {243, 195, 11, 1, 0 ....}
 def lua_table_to_nums(f):
     numbers = re.findall("\d+", f) # returns a list of strings ["243", "195", "11", "1", "0"]
     numbers[:] = [int(x) for x in numbers]
