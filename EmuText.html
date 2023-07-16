@@ -4,7 +4,7 @@
 	<title>Emu LiveText</title>
 	<style>
 		li {
-			font-family:'Yu Gothic', 'Courier New';
+			font-family:'Yu Gothic', 'Meiryo', 'Courier New';
 			font-size: 30px;
 			white-space: pre-line;
 			list-style-type: none;
@@ -33,13 +33,26 @@
 </head>
 
 <body style="background-color:#e5f1ec">
-	<p style="justify-content:center; white-space:pre-line; display:flex; font-family:'Yu Gothic', 'Courier New'; font-size: 48px">Emu LiveText&#10エムライブテキスト</p>
+	<p style="justify-content:center; white-space:pre-line; display:flex; font-family:'Yu Gothic', Meiryo, 'Courier New'; font-size: 48px">Emu LiveText&#10エムライブテキスト</p>
 	<script>
 		var changeFontSize = function(change) {
 			var styleBlock = document.querySelector('style');
-            var fontRule = styleBlock.sheet.cssRules[0];
-            currentFontSize = parseInt(fontRule.style.fontSize);
-            fontRule.style.fontSize = currentFontSize + change + 'px';
+        	var fontRule = styleBlock.sheet.cssRules[0];
+        	currentFontSize = parseInt(fontRule.style.fontSize);
+        	fontRule.style.fontSize = currentFontSize + change + 'px';
+		}
+
+		var changeFont = function() {
+			var styleBlock = document.querySelector('style');
+        	var fontRule = styleBlock.sheet.cssRules[0];
+        	currentFont = fontRule.style.fontFamily;
+			console.log(currentFont)
+			if (currentFont.includes("Yu Gothic") && currentFont.includes("Courier New")){
+				fontRule.style.fontFamily = 'Hiragino Mincho, Yu Mincho, Meiryo, Times New Roman';
+			} 
+			else {
+				fontRule.style.fontFamily = 'Yu Gothic, Meiryo, Courier New';
+			}
 		}
 	</script>
 
@@ -47,6 +60,10 @@
 	<div style="display: flex; justify-content:center;">
 		<button onclick=changeFontSize(2);>Increase Font Size</button>
 		<button onclick = changeFontSize(-2);>Decrease Font Size</button>
+	</div>
+
+	<div style="display: flex; justify-content:center">
+		<button onclick=changeFont();>Change Font</button>
 	</div>
 
 	<script src="client.js"></script>
