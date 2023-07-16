@@ -3,6 +3,13 @@
 <head>
 	<title>Emu LiveText</title>
 	<style>
+		li {
+			font-family:'Yu Gothic', 'Courier New';
+			font-size: 30px;
+			white-space: pre-line;
+			list-style-type: none;
+		}
+
 		button {
 			display: flex;
 			justify-content: center;
@@ -14,16 +21,34 @@
 
 		button:hover {
 			background-color: #c5a33d;
+			border-color: #8e731f;
 		}
 
 		button:active {
 			background-color: #ab8d31;
+			border-color: #7a6219
 		}
+		
 	</style>
 </head>
 
 <body style="background-color:#e5f1ec">
 	<p style="justify-content:center; white-space:pre-line; display:flex; font-family:'Yu Gothic', 'Courier New'; font-size: 48px">Emu LiveText&#10エムライブテキスト</p>
+	<script>
+		var changeFontSize = function(change) {
+			var styleBlock = document.querySelector('style');
+            var fontRule = styleBlock.sheet.cssRules[0];
+            currentFontSize = parseInt(fontRule.style.fontSize);
+            fontRule.style.fontSize = currentFontSize + change + 'px';
+		}
+	</script>
+
+
+	<div style="display: flex; justify-content:center;">
+		<button onclick=changeFontSize(2);>Increase Font Size</button>
+		<button onclick = changeFontSize(-2);>Decrease Font Size</button>
+	</div>
+
 	<script src="client.js"></script>
 </body>
 </html>
