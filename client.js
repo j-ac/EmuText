@@ -10,7 +10,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   var decreaseButton = document.createElement('button');
   decreaseButton.textContent = 'Decrease Font Size';
-  decreaseButton.setAttribute("style", "display: flex; justify-content: center; margin: 5px; background-color: #d7b347; border-color: #9d8027; border-style: outset")
   decreaseButton.onclick = function() {
     var styleBlock = document.querySelector("style");
 	var mainFontRule = styleBlock.sheet.cssRules[0];
@@ -20,7 +19,6 @@ window.addEventListener("DOMContentLoaded", () => {
   
   var increaseButton = document.createElement('button');
   increaseButton.textContent = 'Increase Font Size';
-  increaseButton.setAttribute("style", "display: flex; justify-content: center; margin: 5px; background-color: #d7b347; border-color: #9d8027; border-style: outset")
   increaseButton.onclick = function() {
     var styleBlock = document.querySelector("style");
 	var mainFontRule = styleBlock.sheet.cssRules[0];
