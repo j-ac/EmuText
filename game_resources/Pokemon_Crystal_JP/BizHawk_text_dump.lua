@@ -8,15 +8,17 @@ local VRAM_MEMORY_START = 0x8000		-- Absolute position of the memory domain
 local TEXT_MEMORY_START = 0x9800		-- Position that text begins (in a global frame of reference, not within the domain)
 local POSITION_IN_VRAM = TEXT_MEMORY_START - VRAM_MEMORY_START -- Position relative to the memory domain, required by BizHawk's API
 local TEXT_LENGTH_BYTES = 0x500			-- You know what this means
+client.displaymessages(false) 			-- prevents obnoxious text printouts from getting in your screenshot
 
 while true
 do
 	local keys = input.get()
 	if keys[DUMP_KEY] == true
 	then
+		client.screenshot("out.png")
+		print("sent screenshot")
 
 		mem = memory.read_bytes_as_array(POSITION_IN_VRAM, TEXT_LENGTH_BYTES)
-
 		-- ===============
 		-- === FILE IO ===
 		-- ===============

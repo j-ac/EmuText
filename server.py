@@ -5,6 +5,8 @@ import re
 import sys
 import argparse
 import os
+import base64
+import json
 from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
@@ -35,6 +37,9 @@ async def run_server(websocket):
     with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
         pass # Ensures file exists
     artifacts = load_artifact_detection(os.path.join(args.resources_path, "artifacts.txt"))
+
+    # === Fetch image path ===
+    image_path = os.path.join(args.resources_path, "out.png")
     
     # === Diacritics ===
     # More than one encoding may be used in the same game
@@ -49,15 +54,15 @@ async def run_server(websocket):
     # =================
     message = ""
     while True:
-        # === OPEN DUMP FILE ===
+        # OPEN DUMP FILE
         with open(os.path.join(args.resources_path, "dump.txt"), encoding="utf-8") as f:
             dump = f.read()
             dump_as_nums = lua_table_to_nums(dump) # deserialize
 
-        # === GENERATE MESSAGE ===
+        # GENERATE MESSAGE
         new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums)
 
-        # === SEND OR SKIP MESSAGE ===
+        # SEND OR SKIP MESSAGE
         if new_message == message:
             continue # Don't send repeating messages
         else: 
@@ -66,19 +71,47 @@ async def run_server(websocket):
         if message == "": 
             continue #must be after the preceeding else block otherwise the message can never be updated after init
 
-        # === REMOVE ARTIFACTS ===
-        cleaned_message = message # Prevents the next loop detecting a change in the message and acting as if there was a new dump
+        # REMOVE ARTIFACTS
+        cleaned_message = message # Prevents the next iteration detecting a change in the message and acting as if there was a new dump
         for regex in artifacts:
             cleaned_message = re.sub(regex, '', cleaned_message) 
+
+        # ENCODE IMAGE
+        image_b64 = image_to_base_64(image_path)
+
+        # BUNDLE TEXT AND IMAGE AS JSON
+        json_message = message_and_image_to_json(cleaned_message, image_b64)
  
         # === SEND MESSAGE ===
         if args.verbose:
             print("Sending message")
             print(cleaned_message + '\n')
 
-        await websocket.send(cleaned_message)
+        await websocket.send(json_message.strip())
         print("Message sent")
         await asyncio.sleep(0.5)
+
+
+
+def message_and_image_to_json(text, image_b64):
+    json_dict = {
+        'message': text,
+        'image': 'data:image/png;base64,' + image_b64
+    }
+
+    return json.dumps(json_dict)
+
+
+
+
+def image_to_base_64(path_to_image):
+    if not os.path.exists(path_to_image):
+        return ""
+
+    with open(path_to_image, 'rb') as image_file:
+        image_data = image_file.read()
+
+    return base64.b64encode(image_data).decode('utf-8')
 
 
 # Load regexes from artifacts.txt in the game resources folder
