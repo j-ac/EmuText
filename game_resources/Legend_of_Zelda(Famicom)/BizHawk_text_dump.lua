@@ -5,6 +5,7 @@ local DUMP_KEY = "G"				-- Key which triggers a text dump
 memory.usememorydomain("CIRAM (nametables)")	-- Defines which section of memory the memory API accesses indexed from 0x0
 local POSITION_IN_CIRAM = 0x0090
 local TEXT_LENGTH_BYTES = 0x260
+client.displaymessages(false) 			-- prevents obnoxious text printouts from getting in your screenshot
 
 while true
 do
@@ -12,7 +13,7 @@ do
 	if keys[DUMP_KEY] == true
 	then
 		mem = memory.read_bytes_as_array(POSITION_IN_CIRAM, TEXT_LENGTH_BYTES)
-
+		client.screenshot("out.png")
 		-- ===============
 		-- === FILE IO ===
 		-- ===============

@@ -1,4 +1,5 @@
 window.addEventListener("DOMContentLoaded", () => {
+
   // Divider that holds the text
   const divider = document.createElement("div")
   divider.setAttribute("style", "justify-content: center; margin: 5%; border: 0.3em solid black; background-color:#ffffee")
@@ -10,9 +11,14 @@ window.addEventListener("DOMContentLoaded", () => {
   // Socket things
   const websocket = new WebSocket("ws://localhost:5678/");
   websocket.onmessage = ({ data }) => {
-    const message = document.createElement("li");
-	//message.classList.add('main-font');
-    const content = document.createTextNode(data);
+	const jsonData = JSON.parse(data)
+
+	const imageBase64 = jsonData.image
+	const text = jsonData.message
+
+	document.getElementById('screenshot').src = imageBase64
+	const message = document.createElement("li");
+    const content = document.createTextNode(text);
     message.appendChild(content);
     messages.prepend(message);
   };

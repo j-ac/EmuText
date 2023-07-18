@@ -6,12 +6,16 @@ local DUMP_KEY = "G"				-- Key which triggers a text dump
 memory.usememorydomain("VRAM")			-- Defines which section of memory the memory API accesses, indexed from 0x0
 local POSITION_IN_VRAM = 0x1C00
 local TEXT_LENGTH_BYTES = 0x500			-- You know what this means
+client.displaymessages(false) 			-- prevents obnoxious text printouts from getting in your screenshot
 
 while true
 do
 	local keys = input.get()
 	if keys[DUMP_KEY] == true
 	then
+		client.screenshot("out.png")
+		print("sent screenshot")
+		
 		mem = memory.read_bytes_as_array(POSITION_IN_VRAM, TEXT_LENGTH_BYTES)
 
 		-- ===============
