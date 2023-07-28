@@ -49,5 +49,5 @@ BizHawk uses hotkeys. For instance F will pause the game if used as a dump key.
 
 ### Famicom
 * Legend of Zelda (ゼルダの伝説) (cartridge version)
-
+* Mother (Earthbound Beginnings)
 #### More coming soon!

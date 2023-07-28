@@ -1,0 +1,15 @@
+^\s+$
+NAMEHPPPLVEX\n?
+DD\n
+HH\n?
+\n\n
+9D9D
+[A-Z\d]{7,}
+\${4,}
+\$\n
+^\s*\n
+\d+\n
+YOU WIN\n
+NAME\n?
+B
+DD

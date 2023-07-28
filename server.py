@@ -11,6 +11,7 @@ from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
 parser.add_argument('-v', '--verbose', action='store_true')
+parser.add_argument('-r', '--regex_verbose', action='store_true', help="Prints regex matches to the console whenever an artifact is removed")
 parser.add_argument('resources_path', action='store', help="A directory containing the following:\n1. lua script to dump text\n2. The output of that lua script (does not have to exist at run time)\n3. An encodings.tbl 4. If diacritic encodings are used, a diacritics.txt file")
 args = parser.parse_args()
 
@@ -74,6 +75,11 @@ async def run_server(websocket):
         # REMOVE ARTIFACTS
         cleaned_message = message # Prevents the next iteration detecting a change in the message and acting as if there was a new dump
         for regex in artifacts:
+            if args.regex_verbose:
+                matches = re.findall(regex, cleaned_message)
+                if len(matches) > 0:
+                    print(regex + " removed these matches: " + str(matches) + "\n")
+
             cleaned_message = re.sub(regex, '', cleaned_message) 
 
         # ENCODE IMAGE
