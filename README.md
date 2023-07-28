@@ -41,7 +41,6 @@ BizHawk uses hotkeys. For instance F will pause the game if used as a dump key.
 
 ### Learning More
 * RESOURCES.md is located in /game_resources/, and covers the purpose of each resource file needed to add support for new games
-* REVERSE_ENGINEERING.md is located in /reverse_engineering_tools/ and explains how to use the bundled scripts which may assist in adding additional game support.
 
 ## Currently Supported Games
 ### Gameboy
