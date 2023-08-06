@@ -82,6 +82,7 @@ async def run_server(websocket):
 
             cleaned_message = re.sub(regex, '', cleaned_message) 
 
+        cleaned_message = cleaned_message.strip() + "\n───────────────"
         # ENCODE IMAGE
         image_b64 = image_to_base_64(image_path)
 
@@ -93,9 +94,9 @@ async def run_server(websocket):
             print("Sending message")
             print(cleaned_message + '\n')
 
-        await websocket.send(json_message.strip())
+        await websocket.send(json_message)
         print("Message sent")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1.0)
 
 
 
