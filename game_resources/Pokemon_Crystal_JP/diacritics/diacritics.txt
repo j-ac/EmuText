@@ -1,4 +1,4 @@
-OFFSET=-32
+OFFSET=-20
 E4+99=パ
 E4+9A=ピ
 E4+9B=プ
