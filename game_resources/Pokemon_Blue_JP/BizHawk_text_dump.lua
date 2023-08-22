@@ -1,34 +1,14 @@
--- Dumps text from Pokemon Blue (GBC)
+-- Dumps text from Pokemon Blue (ポケットモンスター 青) in the Japanese version.
 -- For use with the BizHawk emulator
 
+local BACKGROUND_MEM_START = 0x1800	-- Game specific, but probably common. 
+local BACKGROUND_MEM_END = 0x1BFF
 
-local DUMP_KEY = "G"				-- Key which triggers a text dump
-memory.usememorydomain("VRAM")			-- Defines which section of memory the memory API accesses, indexed from 0x0
-local POSITION_IN_VRAM = 0x1C00
-local TEXT_LENGTH_BYTES = 0x500			-- You know what this means
-client.displaymessages(false) 			-- prevents obnoxious text printouts from getting in your screenshot
+local WINDOW_MEM_START = 0x1C00 	-- Game specific, but probably common. 
+local WINDOW_MEM_END = 0x1E33
 
-while true
-do
-	local keys = input.get()
-	if keys[DUMP_KEY] == true
-	then
-		client.screenshot("out.png")
-		print("sent screenshot")
-		
-		mem = memory.read_bytes_as_array(POSITION_IN_VRAM, TEXT_LENGTH_BYTES)
-
-		-- ===============
-		-- === FILE IO ===
-		-- ===============
-		local f = io.open("dump.txt", "w")
-		io.output(f)
-		for i = 1, #mem
-		do
-			io.write(tostring(mem[i]) .. ", ")
-		end
-		io.close()
-
-	end
-	emu.frameadvance() -- otherwise the script hogs CPU and starves the game
-end
+-- Majority of the logic is found in the gameboy library located in /lib/
+package.path = "../../lib/?.lua;" .. package.path
+local gameboy = require("gameboy")
+gameboy.init_memory_positions(BACKGROUND_MEM_START, BACKGROUND_MEM_END, WINDOW_MEM_START, WINDOW_MEM_END)
+gameboy.perform_dumps_forever()
