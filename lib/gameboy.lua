@@ -61,14 +61,14 @@ gameboy.perform_dumps_forever = function()
 			end
 				viewport = {}
 				debug_str = ""
-				for i = 1, NUM_ROWS do
+				for i = 0, NUM_ROWS -1 do
 					for j = 1, ROW_LENGTH do
 						col_num = (j + scroll_x) % (TILE_MAP_WIDTH)
 						row_num = (i + scroll_y) % TILE_MAP_HEIGHT
 
 						location = row_num * TILE_MAP_WIDTH + col_num
 
-						viewport[(i-1) * ROW_LENGTH + j] = tile_map[location]
+						viewport[(i) * ROW_LENGTH + j] = tile_map[location]
 					end
 				end
 			send_to_file(viewport)

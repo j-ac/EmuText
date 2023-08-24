@@ -2,7 +2,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Divider that holds the text
   const divider = document.createElement("div")
-  divider.setAttribute("style", "justify-content: center; margin: 5%; border: 0.3em solid black; background-color:#ffffee")
+  divider.setAttribute("style", "justify-content: center; line-height: 1; margin: 2%; border: 0.3em solid black; background-color:#ffffee")
   document.body.appendChild(divider)
 
   const messages = document.createElement("ul");
