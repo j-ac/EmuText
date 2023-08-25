@@ -154,12 +154,12 @@ while true do
 		scroll_y = (reg_2005_y + scroll_bit_y * SCREEN_HEIGHT_PIXELS) / 8
 
 		viewport = {}
-		for i = 1, SCREEN_HEIGHT_PIXELS /8 do
-			for j = 1, SCREEN_WIDTH_PIXELS/8 do
+		for i = 0, (SCREEN_HEIGHT_PIXELS /8) -1 do
+			for j = 0, (SCREEN_WIDTH_PIXELS/8) -1 do
 				row_num = (i + scroll_y) % combined_nametable_num_rows
-				col_num = (j + scroll_x) % (combined_nametable_row_length + 1)
-				location = row_num * combined_nametable_row_length + col_num 
-				viewport[(i-1) * (SCREEN_WIDTH_PIXELS/8) + j] = combined_nametables[location]
+				col_num = (j + scroll_x) % (combined_nametable_row_length)
+				location = row_num * combined_nametable_row_length + col_num + 1
+				viewport[i * (SCREEN_WIDTH_PIXELS/8) + j + 1] = combined_nametables[location]
 			end
 		end
 
