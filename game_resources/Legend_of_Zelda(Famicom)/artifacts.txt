@@ -2,3 +2,5 @@ X\d+
 ^\s+$
 X\n
 \d+
+　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　\n
+B　　A　　　ーLIFEー

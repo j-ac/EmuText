@@ -35,9 +35,9 @@ A Bash script example for Linux is planned in the near future.
 To make use of instant definition lookups, install [Yomichan](https://foosoft.net/projects/yomichan/). To instantly create Anki flashcards from Yomichan definitions, follow
 [these steps](https://foosoft.net/projects/anki-connect/) from Yomichan's official site.
 
-To change the dump key, open the BizHawk_text_dump.lua file found in that game's resources folder in a text editor. Modify the line
-`local DUMP_KEY = "G"` to use your desired key. Unfortunately BizHawk does not document how to use keys like Shift, Alt, or Spacebar. Be aware that
-BizHawk uses hotkeys. For instance F will pause the game if used as a dump key.
+To change the dump key, open the lua file for the desired console in /lib/. Modify the line `DUMP_KEY = "G"` to your desired key.
+Special characters are case sensitive and must be written begining with a capital letter eg: "Alt", "Shift", "Ctrl" or "Space"
+Be aware that BizHawk uses hotkeys. For instance F will pause the game if used as a dump key. Most keys are unused but can be checked from Config > Hotkeys in Bizhawk.
 
 ### Learning More
 * RESOURCES.md is located in /game_resources/, and covers the purpose of each resource file needed to add support for new games
