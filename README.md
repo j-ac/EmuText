@@ -1,8 +1,7 @@
 # Emu LiveText
 A system of programs which allow in-game dialogue to be displayed instantly in a web browser.
 
-![A demonstration of Emu LiveText in Pokemon Crystal. Definition box powered by Yomichan](https://github.com/j-ac/EmuText/assets/83185117/afd11325-9801-43cf-8764-ed9eb0483bde)
-
+![A demonstration of Emu LiveText in Pokemon Crystal. Definition box powered by Yomichan](https://github.com/j-ac/EmuText/assets/83185117/5e53a2aa-9817-40f2-b8d6-9addbc17b46f)
 
 Designed as a tool for studying Japanese, it works great with browser plugins such as [Yomichan](https://foosoft.net/projects/yomichan/), allowing for painless dictionary lookups, or
 vocabulary mining by using Yomichan's [Anki](https://apps.ankiweb.net/) integration.
@@ -51,3 +50,4 @@ Be aware that BizHawk uses hotkeys. For instance F will pause the game if used a
 * Legend of Zelda (ゼルダの伝説) (cartridge version)
 * Mother (Earthbound Beginnings)
 #### More coming soon!
+![A demonstration of Pokemon Blue, Mother 1, and Legend of Zelda](https://github.com/j-ac/EmuText/assets/83185117/9fea2ab3-29d9-426e-95a4-b50eadcdf631)
