@@ -102,36 +102,44 @@ nes.perform_dumps_forever = function(get_mirroring)
 			-- The resultant dictionary is 1-Dimensional, but can be interpreted as a 2-D image by assuming rows
 			-- match the NES' fixed width of 32 tiles
 		
-			combined_nametables = {}
+			combined_nametables_1_indexed = {}
 			for i= 0, num_rows-1 do
 				for j = 1, row_length do
-					table.insert(combined_nametables, nametable_top_left[i * row_length + j])
+					table.insert(combined_nametables_1_indexed, nametable_top_left[i * row_length + j])
 				end
 				for j = 1, row_length do
-					table.insert(combined_nametables, nametable_top_right[i * row_length + j])
+					table.insert(combined_nametables_1_indexed, nametable_top_right[i * row_length + j])
 				end
 			end
 		
 			for i= 0, num_rows-1 do
 				for j = 1, row_length do
-					table.insert(combined_nametables, nametable_bottom_left[i * row_length + j])
+					table.insert(combined_nametables_1_indexed, nametable_bottom_left[i * row_length + j])
 				end
 				for j = 1, row_length do
-					table.insert(combined_nametables, nametable_bottom_right[i * row_length + j])
+					table.insert(combined_nametables_1_indexed, nametable_bottom_right[i * row_length + j])
 				end
 			end
+			
+			-- 0-indexed
+			-- Wasteful implementation that will do for now
+			combined_nametables = {}
+			for key, value in pairs(combined_nametables_1_indexed) do
+				combined_nametables[key-1] = value
+			end
 
-	-- UNCOMMENT TO CREATE A DUMP OF THE COMBINED NAMETABLES FOR DEBUGGING PURPOSES
+			
+-- UNCOMMENT TO CREATE A DUMP OF THE COMBINED NAMETABLES FOR DEBUGGING PURPOSES
 	-----------------------------------------------------------------------------------------------------------------
-	--		local f = io.open("combined_nametables.txt", "w")
-	--		io.output(f)
-	--		for i = 1, #combined_nametables do
-	--			io.write(string.format("%4d", combined_nametables[i]) .. ", ")
-	--			if (i % (2 * row_length) == 0) then --Makes one row in the dump correspond to one row in the viewport
-	--				io.write("\n")
-	--			end
-	--		end
-	--		io.close()
+--		local f = io.open("combined_nametables.txt", "w")
+--		io.output(f)
+--		for i = 0, #combined_nametables do
+--			if (i % (2 * row_length) == 0) then --Makes one row in the dump correspond to one row in the viewport
+--				io.write("\n")
+--			end
+--			io.write(string.format("%4d", combined_nametables[i]) .. ", ")
+--		end
+--		io.close()
 	------------------------------------------------------------------------------------------------------------------
 	--
 			-- =========================================================================================
@@ -145,12 +153,13 @@ nes.perform_dumps_forever = function(get_mirroring)
 			scroll_y = (reg_2005_y + scroll_bit_y * SCREEN_HEIGHT_PIXELS) / 8
 
 			viewport = {}
-			for i = 1, SCREEN_HEIGHT_PIXELS /8 do
-				for j = 1, SCREEN_WIDTH_PIXELS/8 do
+			for i = 0, (SCREEN_HEIGHT_PIXELS /8)-1 do
+				for j = 0, (SCREEN_WIDTH_PIXELS/8)-1 do
 					row_num = (i + scroll_y) % combined_nametable_num_rows
-					col_num = (j + scroll_x) % (combined_nametable_row_length + 1)
+					col_num = (j + scroll_x) % (combined_nametable_row_length)
 					location = row_num * combined_nametable_row_length + col_num 
-					viewport[(i-1) * (SCREEN_WIDTH_PIXELS/8) + j] = combined_nametables[location]
+
+					viewport[(i) * (SCREEN_WIDTH_PIXELS/8) + j] = combined_nametables[location]
 				end
 			end
 
