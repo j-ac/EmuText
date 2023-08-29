@@ -7,7 +7,6 @@ HH\n?
 [A-Z\d]{7,}
 \${4,}
 \$\n
-^\s*\n
 \d+\n
 YOU WIN\n
 NAME\n?
