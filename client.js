@@ -20,6 +20,39 @@ window.addEventListener("DOMContentLoaded", () => {
 	const message = document.createElement("li");
     const content = document.createTextNode(text);
     message.appendChild(content);
+
+	// Icon
+	const icon = document.createElement("i");
+	icon.className = "fas fa-solid fa-copy";
+	icon.style.display = "none";
+	message.appendChild(icon);
+	
+	message.addEventListener("mouseover", () => {
+		icon.style.display = "inline-block";
+	});
+
+	message.addEventListener("mouseout", () => {
+		icon.style.display = "none";
+	});
+
+	// On click copy the text, ignoring border characters
+	icon.addEventListener("click", async () => {
+		const clean_text = text.replaceAll(/[━┏┓┃┛┗─]/g, "");
+		await navigator.clipboard.writeText(clean_text)
+
+		// Change the icon for 1 second to indicate success
+		.then(() => {
+			icon.className = "fas fa-check";
+			setTimeout(() => {
+			icon.className = "fas fa-copy"
+		}, 500);
+
+		})
+	});
+
+
+
+
     messages.prepend(message);
   };
 });
