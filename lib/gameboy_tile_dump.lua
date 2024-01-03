@@ -15,6 +15,8 @@ SPRITE_SIZE = 2 * BYTE_SIZE --bytes
 START_TILE = 320 -- Tile number
 NUM_SPRITES = 64 -- number of sprites in contiguous memory from the starting tile.
 
+VRAM_START = 0x8000
+
 DUMP_START = SPRITE_SIZE * START_TILE
 DUMP_END = DUMP_START + NUM_SPRITES * SPRITE_SIZE
 
@@ -82,15 +84,6 @@ function interpret_sprite(data)
 		pic = pic .. "\n"
 	end
 
-
-	-- DEBUG
---	if num_pics % 1 == 0 then
---		print(pic)
---		print (byte_array_to_string(data))
---	end
---	num_pics = num_pics + 1
-	-- DEBUG
-
 	return pic
 end
 
@@ -102,14 +95,18 @@ function byte_array_to_string(arr)
 	return ret
 end
 
+REMOVE_GREY_SPRITES = true -- Whether to discard sprites that use ▓▓ or ▒▒. Because in some games they are certainly junk characters.
 while true do
 	for i=DUMP_START, DUMP_END - SPRITE_SIZE, SPRITE_SIZE do -- For each sprite
 		bytes = memory.read_bytes_as_array(i, SPRITE_SIZE)
 		as_string = byte_array_to_string(bytes)
 
 		if sprite_data[as_string] == nil then
-			sprite_data[as_string] = {picture = interpret_sprite(bytes), character = ""}
+			picture = interpret_sprite(bytes)
+			if (REMOVE_GREY_SPRITES == true and string.find(picture, "▓▓") ~= nil or string.find(picture, "▒▒") ~= nil) then goto skip end 
+			sprite_data[as_string] = {picture = interpret_sprite(bytes), character = "", location = string.format("%04X", i + VRAM_START)}
 		end
+		::skip::
 	end
 
 
@@ -122,7 +119,8 @@ while true do
 			out_str = json.encode({
 			data = key,
 			picture = val.picture,
-			character = val.character})
+			character = val.character,
+			location = val.location})
 			io.write(out_str .. "\n")
 		end
 
