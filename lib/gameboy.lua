@@ -1,3 +1,5 @@
+local misc = require("misc")
+
 local gameboy = {}
 print("Gameboy libary imported")
 
@@ -22,7 +24,7 @@ end
 
 function window_is_rendered()
 	LCD_control = memory.read_u8(0xFF40, "System Bus")
-	window_enabled = (LCD_control & 32)  >> 5 -- bitmasking for bit 00100000
+	window_enabled = (LCD_control & 32)  >> 5 == 1-- bitmasking for bit 00100000
 	y_pos = memory.read_u8(0xFF4A, "System Bus")
 	x_pos = memory.read_u8(0xFF4B, "System Bus")
 
@@ -40,15 +42,57 @@ function send_to_file(viewport)
 			io.write("\n")
 		end
 	end
-	io.close()
+	io.close(f)
 end
 
-gameboy.perform_dumps_forever = function()
+
+-- Dump 
+-- Most information required to understand this is in PanDocs section 4.1
+function dump_tileset()
+	local TILES_PER_BANK = 384
+	local SPRITE_SIZE = 16
+
+	local BLOCK_0_END = 0x07FF
+	local BLOCK_1_END = 0x0FFF
+	local BLOCK_2_END = 0x17FF
+
+	-- detect indexing mode
+	local is_unsigned = misc.extract(memory.read_u8(0xFF40, "System Bus"), 4) == 1
+
+
+	-- See Panda Docs 4.1 Table 1
+	local f = io.open("active_sprites.txt", "w")
+	io.output(f)
+	if is_unsigned then
+		for i= 0, BLOCK_0_END - SPRITE_SIZE, SPRITE_SIZE do
+			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
+		end 
+	else
+		for i = BLOCK_1_END + 1, BLOCK_2_END - SPRITE_SIZE, SPRITE_SIZE do			
+			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
+		end
+	end
+
+	-- This section is identical between both indexing schemes.
+	for i = BLOCK_0_END + 1, BLOCK_1_END - SPRITE_SIZE, SPRITE_SIZE do
+			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")	
+	end
+	
+	io.close(f)
+
+end
+
+gameboy.perform_dumps_forever = function(needs_dump_tileset)
+	if needs_dump_tileset == nil then needs_dump_tileset = false end -- Optional argument for games that use tile swapping.
 	while true do
 		local keys = input.get()
 		if keys[DUMP_KEY] == true then
 			client.screenshot("out.png")
 			print("sent screenshot")
+
+			if needs_dump_tileset then -- On games with tile swapping
+				dump_tileset()
+			end
 
 			if window_is_rendered() then
 				tile_map = memory.read_bytes_as_array(WINDOW_MEM_START, WINDOW_LENGTH)

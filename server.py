@@ -45,7 +45,10 @@ async def run_server(websocket):
 
         # GENERATE MESSAGE
         screen_width = console_screen_width[meta_data["console"]]
-        new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums, screen_width)
+        if meta_data["tile-swapping"]:
+            new_message = generate_text_with_swapping()
+        else:
+            new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums, screen_width)
 
         # SEND OR SKIP MESSAGE
         if new_message == message:
@@ -69,7 +72,7 @@ async def run_server(websocket):
         if args.condensed_output:
             cleaned_message = cleaned_message.strip()
         
-        cleaned_message = cleaned_message + "\n───────────────"
+        cleaned_message = cleaned_message + "\n───────────────\t"
 
         # ENCODE IMAGE
         image_b64 = image_to_base_64(image_path)
@@ -87,12 +90,6 @@ async def run_server(websocket):
         await asyncio.sleep(1.0)
 
 def load_game_resources():
-    with open(os.path.join(args.resources_path, "encodings.tbl"), "a"):
-        pass # Ensures file exists
-    
-    with open(os.path.join(args.resources_path, "non_condensed_mode_encodings.tbl"), "a"):
-        pass 
-
     with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
         pass
 
@@ -182,9 +179,6 @@ def diacritic_table_to_dict(path_to_diacritic_table):
 
     return DiacriticEncoding(dictionary, offset)
 
-    
-
-
 # Character encodings are defined according to a "thingy table" which is a plaintext document of the following format (specific values will differ)
 # left side corresponds to a hex value, and right side indicates its character equivalent
 # 50=A
@@ -242,7 +236,15 @@ def generate_text(encoding, diacritics_list, dump, screen_width):
             text += encoding[num]
 
         return text
-        
+
+def generate_text_with_swapping():
+    print("TODO!")
+    # From active sprites create a dictionary that relates tile number to data
+    # Look at the dump. For each number, find the data that corresponds to that.
+    # Relate the data to a character using another dictionary created at init time (using tiles.json)
+
+
+
 # Check if the character we are looking at matches any of the known diacritic rules, and if it does return that diacritic.
 def generate_diacritic_text(num, num_position, diacritics_list, dump):
     ret = ""
