@@ -4,8 +4,8 @@
 -- For use with the BizHawk emulator
 
 local remove_grey_sprites = true
-local start_tile = 312
-local num_sprites = 72
+local start_tile = 128
+local num_sprites = 256
 
 package.path = "../../lib/?.lua;"
 local dumper = require("gameboy_tile_dump")

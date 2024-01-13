@@ -12,6 +12,11 @@ TILE_MAP_HEIGHT = 32
 ROW_LENGTH = 20 --tiles in the viewport
 NUM_ROWS = 18
 
+-- PanDocs 4.2 explains particulars of Gameboy Color.
+GBC_INFO_BLOCK_START = 0x3800
+GBC_INFO_BLOCK_END = 0x3BFF
+GBC_INFO_BLOCK_LENGTH = GBC_INFO_BLOCK_END - GBC_INFO_BLOCK_START
+
 gameboy.init_memory_positions = function(bg_start, bg_end, win_start, win_end)
 	BACKGROUND_MEM_START = bg_start
 	BACKGROUND_MEM_END = bg_end
@@ -64,17 +69,18 @@ function dump_tileset()
 	local f = io.open("active_sprites.txt", "w")
 	io.output(f)
 	if is_unsigned then
-		for i= 0, BLOCK_0_END - SPRITE_SIZE, SPRITE_SIZE do
+		for i= 0, BLOCK_0_END, SPRITE_SIZE do
 			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
 		end 
 	else
-		for i = BLOCK_1_END + 1, BLOCK_2_END - SPRITE_SIZE, SPRITE_SIZE do			
+		for i = BLOCK_1_END + 1, BLOCK_2_END, SPRITE_SIZE do			
 			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
 		end
 	end
 
 	-- This section is identical between both indexing schemes.
-	for i = BLOCK_0_END + 1, BLOCK_1_END - SPRITE_SIZE, SPRITE_SIZE do
+	for i = BLOCK_0_END + 1, BLOCK_1_END, SPRITE_SIZE do
+			debug_str = debug_str .. string.format("%04X", i) .. "\n"
 			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")	
 	end
 	
@@ -94,6 +100,12 @@ gameboy.perform_dumps_forever = function(needs_dump_tileset)
 				dump_tileset()
 			end
 
+			-- PanDocs 4.2
+			local GAMEBOY_COLOR = true
+			if GAMEBOY_COLOR then
+				GBC_tile_info = memory.read_bytes_as_array(GBC_INFO_BLOCK_START, GBC_INFO_BLOCK_LENGTH)
+			end
+
 			if window_is_rendered() then
 				tile_map = memory.read_bytes_as_array(WINDOW_MEM_START, WINDOW_LENGTH)
 				scroll_y = 0
@@ -101,20 +113,26 @@ gameboy.perform_dumps_forever = function(needs_dump_tileset)
 			else
 				tile_map = memory.read_bytes_as_array(BACKGROUND_MEM_START, BACKGROUND_LENGTH)
 				scroll_y = memory.read_u8(0xFF42, "System Bus") /8
-				scroll_x = memory.read_u8(0xFF43, "System Bus") /8 --should it be plus 1 then divided by 8?
+				scroll_x = memory.read_u8(0xFF43, "System Bus") /8 
 			end
-				viewport = {}
-				debug_str = ""
-				for i = 0, NUM_ROWS -1 do
-					for j = 1, ROW_LENGTH do
-						col_num = (j + scroll_x) % (TILE_MAP_WIDTH)
-						row_num = (i + scroll_y) % TILE_MAP_HEIGHT
 
-						location = row_num * TILE_MAP_WIDTH + col_num
+			viewport = {}
+			debug_str = ""
+			for i = 0, NUM_ROWS -1 do
+				for j = 1, ROW_LENGTH do
+					col_num = (j + scroll_x) % TILE_MAP_WIDTH
+					row_num = (i + scroll_y) % TILE_MAP_HEIGHT
 
-						viewport[(i) * ROW_LENGTH + j] = tile_map[location]
+					location = row_num * TILE_MAP_WIDTH + col_num
+
+					local tile_in_bank_2 = misc.extract(GBC_tile_info[location], 4) == 1
+					if not tile_in_bank_2 then 
+						viewport[i * ROW_LENGTH + j] = tile_map[location]
+					else
+						viewport[i* ROW_LENGTH + j] = 0 -- It is assumed fonts never go in Bank 2
 					end
 				end
+			end
 			send_to_file(viewport)
 		end
 		emu.frameadvance() -- otherwise the script hogs CPU and starves the game

@@ -7,6 +7,7 @@ import argparse
 import os
 import base64
 import json
+import random
 from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
@@ -30,7 +31,7 @@ async def run_server(websocket):
     # =============
     print("Connection established with web client")
 
-    encoding, artifacts, diacritic_encoding_list, meta_data = load_game_resources()
+    encoding, artifacts, diacritic_encoding_list, meta_data, tileswap_data = load_game_resources()
 
     image_path = os.path.join(args.resources_path, "out.png")
     # =================
@@ -46,7 +47,7 @@ async def run_server(websocket):
         # GENERATE MESSAGE
         screen_width = console_screen_width[meta_data["console"]]
         if meta_data["tile-swapping"]:
-            new_message = generate_text_with_swapping()
+            new_message = generate_text_with_swapping(dump_as_nums, tileswap_data, screen_width)
         else:
             new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums, screen_width)
 
@@ -121,7 +122,19 @@ def load_game_resources():
         d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
         diacritic_encoding_list.append(d_table)
 
-    return encoding, artifacts, diacritic_encoding_list, meta_data
+    tileswap_data = None
+    if meta_data["tile-swapping"]:
+        with open(os.path.join(args.resources_path, "tiles.json"), 'r') as file:
+            json_data = [json.loads(line) for line in file]
+            tileswap_data = {entry['data']: entry['character'] for entry in json_data}
+
+             #Makes testing WIP data easier by filling it with recognizable symbols
+            #for i, x in enumerate(tileswap_data):
+            #    if tileswap_data[x] == "":
+            #        tileswap_data[x] = chr(i % 0x5B + 0x0023) #readable latin character range
+
+
+    return encoding, artifacts, diacritic_encoding_list, meta_data, tileswap_data
 
 
 def message_and_image_to_json(text, image_b64):
@@ -237,13 +250,27 @@ def generate_text(encoding, diacritics_list, dump, screen_width):
 
         return text
 
-def generate_text_with_swapping():
-    print("TODO!")
-    # From active sprites create a dictionary that relates tile number to data
-    # Look at the dump. For each number, find the data that corresponds to that.
-    # Relate the data to a character using another dictionary created at init time (using tiles.json)
+def generate_text_with_swapping(dump, tileswap_data, screen_width):
+    active_sprites = []
+    text = ""
+    with open(os.path.join(args.resources_path, "active_sprites.txt")) as file:
+        for line in file:
+            active_sprites.append(line.rstrip())
 
+    for i, pointer in enumerate(dump):
+        if i != 0 and i % screen_width == 0: text += "\n"
 
+        if pointer > len(active_sprites) - 1:
+            print("ERR: pointer in dump exceeds expected size: " + pointer)
+        
+        sprite_data = active_sprites[pointer]
+ 
+        if sprite_data in tileswap_data:
+            text += tileswap_data[sprite_data]
+        else:
+            text += chr(0x3000) #kana-width space
+
+    return text 
 
 # Check if the character we are looking at matches any of the known diacritic rules, and if it does return that diacritic.
 def generate_diacritic_text(num, num_position, diacritics_list, dump):
