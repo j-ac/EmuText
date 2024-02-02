@@ -45,6 +45,7 @@ Be aware that BizHawk uses hotkeys. For instance F will pause the game if used a
 ### Gameboy
 * Pokemon Blue (ポケットモンスター 青)
 * Pokemon Crystal (ポケットモンスター　クリスタルバージョン)
+* Pokemon Trading Card Game 2: (ポケモンカードＧＢ２) (Uses kanji!)
 
 ### Famicom
 * Legend of Zelda (ゼルダの伝説) (cartridge version)
