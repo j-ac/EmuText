@@ -14,6 +14,7 @@ function misc.byte_array_to_string(arr)
 	for byte = 1, #arr do
 		ret = ret .. string.format("%02X", arr[byte])
 	end
+
 	return ret
 end
 

@@ -82,21 +82,21 @@ dumper.dump_sprites_forever = function(remove_grey_sprites, start_tile, num_spri
 	local dump_end = dump_start + num_sprites * SPRITE_SIZE
 
 	while true do
-		for i=dump_start, dump_end - SPRITE_SIZE, SPRITE_SIZE do -- For each sprite
-			local bytes = memory.read_bytes_as_array(i, SPRITE_SIZE)
-			local as_string = misc.byte_array_to_string(bytes)
-
-			if sprite_data[as_string] == nil then
-				local picture = interpret_sprite(bytes)
-				if (remove_grey_sprites == true and string.find(picture, "▓▓") ~= nil or string.find(picture, "▒▒") ~= nil) then goto skip end 
-				sprite_data[as_string] = {picture = interpret_sprite(bytes), character = "", location = string.format("%04X", i + VRAM_START)}
-			end
-			::skip::
-		end
-
-
 		local keys = input.get()
 		if keys[DUMP_KEY] == true then
+			for i=dump_start, dump_end - SPRITE_SIZE, SPRITE_SIZE do -- For each sprite
+				local bytes = memory.read_bytes_as_array(i, SPRITE_SIZE)
+				local as_string = misc.byte_array_to_string(bytes)
+
+				if sprite_data[as_string] == nil then
+					local picture = interpret_sprite(bytes)
+					if (remove_grey_sprites == true and string.find(picture, "▓▓") ~= nil or string.find(picture, "▒▒") ~= nil) then goto skip end 
+					sprite_data[as_string] = {picture = interpret_sprite(bytes), character = "", location = string.format("%04X", i + VRAM_START)}
+				end
+				::skip::
+			end
+
+
 			local f = io.open(output_file, "wb")
 			io.output(f)
 
@@ -112,7 +112,6 @@ dumper.dump_sprites_forever = function(remove_grey_sprites, start_tile, num_spri
 			io.close()
 			print("Successfully wrote to ".. output_file)
 		end
-
 		emu.frameadvance()
 
 	end

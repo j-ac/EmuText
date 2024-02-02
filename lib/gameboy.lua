@@ -51,7 +51,7 @@ function send_to_file(viewport)
 end
 
 
--- Dump 
+-- Dump snapshot of tileset at a given time. The position in the map matches the pointer that refers to it (eg pointer 0 refers to the first element)
 -- Most information required to understand this is in PanDocs section 4.1
 function dump_tileset()
 	local TILES_PER_BANK = 384
@@ -64,35 +64,41 @@ function dump_tileset()
 	-- detect indexing mode
 	local is_unsigned = misc.extract(memory.read_u8(0xFF40, "System Bus"), 4) == 1
 
-
-	-- See Panda Docs 4.1 Table 1
-	local f = io.open("active_sprites.txt", "w")
-	io.output(f)
+	-- PanDocs 4.1 Table 1
+	local export_string = ""
 	if is_unsigned then
 		for i= 0, BLOCK_0_END, SPRITE_SIZE do
-			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
+			export_string = export_string .. misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n"
 		end 
 	else
 		for i = BLOCK_1_END + 1, BLOCK_2_END, SPRITE_SIZE do			
-			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")
+			export_string = export_string .. misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n"
 		end
 	end
 
 	-- This section is identical between both indexing schemes.
 	for i = BLOCK_0_END + 1, BLOCK_1_END, SPRITE_SIZE do
-			debug_str = debug_str .. string.format("%04X", i) .. "\n"
-			io.write(misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n")	
+			export_string = export_string .. misc.byte_array_to_string(memory.read_bytes_as_array(i, SPRITE_SIZE)) .. "\n"
 	end
 	
+	local f = io.open("active_sprites.txt", "w")
+	io.output(f)
+	io.write(export_string)
 	io.close(f)
 
 end
 
 gameboy.perform_dumps_forever = function(needs_dump_tileset)
 	if needs_dump_tileset == nil then needs_dump_tileset = false end -- Optional argument for games that use tile swapping.
+	local key_was_released = true -- So that the script does not rapidfire when the key is held
 	while true do
 		local keys = input.get()
-		if keys[DUMP_KEY] == true then
+		if keys[DUMP_KEY] == nil then
+			key_was_released = true
+		end
+
+		if keys[DUMP_KEY] and key_was_released then
+			key_was_released = false
 			client.screenshot("out.png")
 			print("sent screenshot")
 

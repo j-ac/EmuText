@@ -7,7 +7,6 @@ import argparse
 import os
 import base64
 import json
-import random
 from typing import NamedTuple
 
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
@@ -30,15 +29,15 @@ async def run_server(websocket):
     # === SETUP ===
     # =============
     print("Connection established with web client")
-
     encoding, artifacts, diacritic_encoding_list, meta_data, tileswap_data = load_game_resources()
-
     image_path = os.path.join(args.resources_path, "out.png")
+
     # =================
     # === MAIN LOOP ===
     # =================
     message = ""
     while True:
+        await asyncio.sleep(0.01)
         # OPEN DUMP FILE
         with open(os.path.join(args.resources_path, "dump.txt"), encoding="utf-8") as f:
             dump = f.read()
@@ -47,6 +46,7 @@ async def run_server(websocket):
         # GENERATE MESSAGE
         screen_width = console_screen_width[meta_data["console"]]
         if meta_data["tile-swapping"]:
+            await wait_for_filewrite(os.path.join(args.resources_path, "active_sprites.txt"))
             new_message = generate_text_with_swapping(dump_as_nums, tileswap_data, screen_width)
         else:
             new_message = generate_text(encoding, diacritic_encoding_list, dump_as_nums, screen_width)
@@ -88,7 +88,17 @@ async def run_server(websocket):
 
         await websocket.send(json_message)
         print("Message sent")
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(1.5)
+
+async def wait_for_filewrite(path):
+    old_filesize = 0
+    filesize = 1
+    while old_filesize != filesize and filesize != 0:
+        old_filesize = os.path.getsize(path)
+        await asyncio.sleep(0.02)
+        filesize = os.path.getsize(path)
+    
+    return
 
 def load_game_resources():
     with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
@@ -250,7 +260,11 @@ def generate_text(encoding, diacritics_list, dump, screen_width):
 
         return text
 
+# Generate text for a game which uses tileswapping (tile-swapping is true in meta.json)
+# considers the dump as a list of pointers, which reference tiles in active_sprites
+# determines a UTF-8 character match using the game's tiles.json
 def generate_text_with_swapping(dump, tileswap_data, screen_width):
+    # === GENERATE TEXT ===
     active_sprites = []
     text = ""
     with open(os.path.join(args.resources_path, "active_sprites.txt")) as file:
@@ -261,9 +275,9 @@ def generate_text_with_swapping(dump, tileswap_data, screen_width):
         if i != 0 and i % screen_width == 0: text += "\n"
 
         if pointer > len(active_sprites) - 1:
-            print("ERR: pointer in dump exceeds expected size: " + pointer)
+            print("ERR: pointer in dump exceeds expected size. Pointer:" + str(pointer) + "pointer limit: " + str(len(active_sprites)-1))
         
-        sprite_data = active_sprites[pointer]
+        sprite_data = active_sprites[pointer] if pointer < len(active_sprites) else None
  
         if sprite_data in tileswap_data:
             text += tileswap_data[sprite_data]
