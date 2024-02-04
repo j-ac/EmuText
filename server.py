@@ -73,7 +73,7 @@ async def run_server(websocket):
         if args.condensed_output:
             cleaned_message = cleaned_message.strip()
         
-        cleaned_message = cleaned_message + "\n───────────────\t"
+        cleaned_message = cleaned_message + "\n" + "─" * screen_width + "\t"
 
         # ENCODE IMAGE
         image_b64 = image_to_base_64(image_path)
