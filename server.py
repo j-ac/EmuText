@@ -13,7 +13,6 @@ parser = argparse.ArgumentParser(description="Interprets and serves text in emul
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--regex_verbose', action='store_true', help="Prints regex matches to the console whenever an artifact is removed")
 parser.add_argument('resources_path', action='store', help="A directory containing the following:\n1. lua script to dump text\n2. The output of that lua script (does not have to exist at run time)\n3. An encodings.tbl 4. If diacritic encodings are used, a diacritics.txt file")
-parser.add_argument('-c', '--condensed_output', action='store_true', help="Messages are sent to the server less like their in-game representations to save vertical space")
 args = parser.parse_args()
 
 console_screen_width = {"Gameboy": 20, "Gameboy Color": 20, "NES": 32, "Famicom": 32} #In tiles
@@ -70,9 +69,6 @@ async def run_server(websocket):
 
             cleaned_message = re.sub(regex, '', cleaned_message) 
 
-        if args.condensed_output:
-            cleaned_message = cleaned_message.strip()
-        
         cleaned_message = cleaned_message + "\n" + "─" * screen_width + "\t"
 
         # ENCODE IMAGE
@@ -100,59 +96,80 @@ async def wait_for_filewrite(path):
     
     return
 
+def file_exists(filename):
+    return os.path.exists(os.path.join(args.resources_path, filename))
+
 def load_game_resources():
+    # ============================
+    # === CHECK FILE DIRECTORY ===
+    # ============================
+
+    # Verify critical files are present
+    if not file_exists("meta.json") or not file_exists("BizHawk_text_dump.lua"):
+        sys.exit("Error: " + args.resources_path + " is missing one or more of the following: meta.json, Bizhawk_text_dump.lua")
+
+    # Load metadata
+    meta_data = json.loads(open(os.path.join(args.resources_path, "meta.json")).read())
+
+    # Metadata specific 
+    if "tile-swapping" not in meta_data or not isinstance(meta_data["tile-swapping"], bool):
+        sys.exit("Error: tile-swapping parameter in meta.json not found or is not set to a boolean value.")
+
+    if meta_data["tile-swapping"]:
+        if not file_exists("tiles.json"):
+            sys.exit("Error: Games with tile-swapping enabled in meta.json must have a tiles.json file.")
+        with open(os.path.join(args.resources_path, "active_sprites.txt"), "a") as f:
+            pass
+    else:
+        if not file_exists("encodings.tbl"):
+            sys.exit("Error: Games with tile-swapping disabled in meta.json must have an encodings.tbl file.")
+
+    # Create any non-critical files if not present
     with open(os.path.join(args.resources_path, "artifacts.txt"), "a") as f:
         pass
 
     with open(os.path.join(args.resources_path, "dump.txt"), "a") as f:
         pass
-    
-    with open(os.path.join(args.resources_path, "meta.json"), "a") as f:
-        pass
+
+    # ======================
+    # === LOAD RESOURCES ===
+    # ======================
 
     # === INTERPRET ENCODINGS IN THE RESOURCE FOLDER ====
-    encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl"))
-
-    # Contains characters for UI elements like text box borders
-    if not args.condensed_output:
-        extended_encodings = thingy_table_to_dict(os.path.join(args.resources_path, "non_condensed_mode_encodings.tbl"))
-        encoding = encoding | extended_encodings #union
+    encoding = thingy_table_to_dict(os.path.join(args.resources_path, "encodings.tbl")) if not meta_data["tile-swapping"] else None
 
     # === LOAD ARTIFACT DETECTION REGEXES ===
     artifacts = load_artifact_detection(os.path.join(args.resources_path, "artifacts.txt"))
 
-    # === LOAD METADATA ===
-    meta_data = json.loads(open(os.path.join(args.resources_path, "meta.json")).read())
-    
     # === Diacritics ===
     # More than one encoding may be used in the same game
-    diacritics_dir = os.path.join(args.resources_path, "diacritics")
-    diacritic_encoding_list = []
-    for encoding_file in os.listdir(diacritics_dir):
-        d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
-        diacritic_encoding_list.append(d_table)
+    diacritic_encoding_list = None
+    if not meta_data["tile-swapping"]:
+        diacritics_dir = os.path.join(args.resources_path, "diacritics")
+        diacritic_encoding_list = []
+        for encoding_file in os.listdir(diacritics_dir):
+            d_table = diacritic_table_to_dict(os.path.join(diacritics_dir, encoding_file))
+            diacritic_encoding_list.append(d_table)
 
+    # === Tileswap data ===
     tileswap_data = None
     if meta_data["tile-swapping"]:
         with open(os.path.join(args.resources_path, "tiles.json"), 'r') as file:
             json_data = [json.loads(line) for line in file]
             tileswap_data = {entry['data']: entry['character'] for entry in json_data}
 
-             #Makes testing WIP data easier by filling it with recognizable symbols
+            #Makes testing WIP data easier by filling it with recognizable symbols
             #for i, x in enumerate(tileswap_data):
             #    if tileswap_data[x] == "":
             #        tileswap_data[x] = chr(i % 0x5B + 0x0023) #readable latin character range
 
-
     return encoding, artifacts, diacritic_encoding_list, meta_data, tileswap_data
-
 
 def message_and_image_to_json(text, image_b64):
     json_dict = {
         'message': text,
         'image': 'data:image/png;base64,' + image_b64
     }
-
     return json.dumps(json_dict)
 
 def image_to_base_64(path_to_image):
@@ -226,39 +243,21 @@ def thingy_table_to_dict(path_to_thingy_table):
 # Iterate through the dump and using the known encoding and diacritic rules, return it as a python string.
 def generate_text(encoding, diacritics_list, dump, screen_width):
     text = ""
-    if args.condensed_output:
-        for i, num in enumerate(dump):
-            if num not in encoding:
-                continue # Scrap junk characters
+    for i, num in enumerate(dump):
+        if i != 0 and i % screen_width == 0: text += "\n"
 
-            diacritic = generate_diacritic_text(num, i, diacritics_list, dump)
-            if diacritic != "": #ie there was a diacritic
-                text += diacritic
-                continue
+        if num not in encoding:
+            text += chr(0x3000) #kana-width space
+            continue 
 
-            # Otherwise:
-            text += encoding[num]
-     
-        text = re.sub("\s{2,}", '\n', text) 
-        return text
+        diacritic = generate_diacritic_text(num, i, diacritics_list, dump)
+        if diacritic != "": #ie there was a diacritic
+            text += diacritic
+            continue
 
-    else:
-        for i, num in enumerate(dump):
-            if i != 0 and i % screen_width == 0: text += "\n"
+        text += encoding[num]
 
-            if num not in encoding:
-                text += chr(0x3000) #kana-width space
-                continue 
-
-            diacritic = generate_diacritic_text(num, i, diacritics_list, dump)
-            if diacritic != "": #ie there was a diacritic
-                text += diacritic
-                continue
-
-            #otherwise
-            text += encoding[num]
-
-        return text
+    return text
 
 # Generate text for a game which uses tileswapping (tile-swapping is true in meta.json)
 # considers the dump as a list of pointers, which reference tiles in active_sprites
@@ -299,8 +298,6 @@ def generate_diacritic_text(num, num_position, diacritics_list, dump):
                 ret = diacritic_encoding.dictionary[key]
 
     return ret
-
-
 
 async def main():
     async with websockets.serve(run_server, "localhost", 5678):
