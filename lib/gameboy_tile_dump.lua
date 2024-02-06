@@ -70,6 +70,7 @@ function interpret_sprite(data)
 
 	return pic
 end
+dumper.interpret_sprite = interpret_sprite
 
 -- The primary function called externally.
 -- remove_grey_sprites (boolean): Whether to discard sprites that use ▓▓ or ▒▒. In some games they are certainly junk characters.
