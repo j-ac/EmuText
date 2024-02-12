@@ -84,7 +84,7 @@ async def run_server(websocket):
 
         await websocket.send(json_message)
         print("Message sent")
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(0.5)
 
 async def wait_for_filewrite(path):
     old_filesize = 0

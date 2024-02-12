@@ -102,10 +102,6 @@ gameboy.perform_dumps_forever = function(needs_dump_tileset)
 			client.screenshot("out.png")
 			print("sent screenshot")
 
-			if needs_dump_tileset then -- On games with tile swapping
-				dump_tileset()
-			end
-
 			-- PanDocs 4.2
 			local GAMEBOY_COLOR = true
 			if GAMEBOY_COLOR then
@@ -140,6 +136,11 @@ gameboy.perform_dumps_forever = function(needs_dump_tileset)
 				end
 			end
 			send_to_file(viewport)
+			
+			if needs_dump_tileset then -- On games with tile swapping
+				dump_tileset()
+			end
+
 		end
 		emu.frameadvance() -- otherwise the script hogs CPU and starves the game
 	end
