@@ -12,9 +12,15 @@ from typing import NamedTuple
 parser = argparse.ArgumentParser(description="Interprets and serves text in emulated software to a web browser for live viewing.", epilog="More detail found in README")
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--regex_verbose', action='store_true', help="Prints regex matches to the console whenever an artifact is removed")
-parser.add_argument('resources_path', action='store', help="A directory containing the following:\n1. lua script to dump text\n2. The output of that lua script (does not have to exist at run time)\n3. An encodings.tbl 4. If diacritic encodings are used, a diacritics.txt file")
+parser.add_argument('resources_path', action='store', nargs='?', default="NO_ARGUMENT", help="A directory containing required game resources. Detailed description can be found in game_resources/RESOURCES.md")
 args = parser.parse_args()
 
+# Prompt if not supplied for executable users
+if getattr(sys, 'frozen', False) and args.resources_path == "NO_ARGUMENT": # frozen=false indicates compiled
+    print("No game resource folder was provided as a positional argument.")
+    while not os.path.exists(args.resources_path):
+        args.resources_path = os.path.join("..", "..", input("Please specify a valid game resources path. eg: " + os.path.join("game_resources", "Pokemon_Blue_JP") + "\n"))
+        
 console_screen_width = {"Gameboy": 20, "Gameboy Color": 20, "NES": 32, "Famicom": 32} #In tiles
 
 # Retains information necessary for interpreting diacritic characters when they
