@@ -12,3 +12,4 @@ YOU WIN\n
 NAME\n?
 B
 DD
+[　]{32}\n
