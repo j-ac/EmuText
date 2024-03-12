@@ -19,7 +19,7 @@ args = parser.parse_args()
 if getattr(sys, 'frozen', False) and args.resources_path == "NO_ARGUMENT": # frozen=false indicates compiled
     print("No game resource folder was provided as a positional argument.")
     while not os.path.exists(args.resources_path):
-        args.resources_path = os.path.join("..", "..", input("Please specify a valid game resources path. eg: " + os.path.join("game_resources", "Pokemon_Blue_JP") + "\n"))
+        args.resources_path = input("Please specify a valid game resources path. eg: " + os.path.join("game_resources", "Pokemon_Blue_JP") + "\n")
         
 console_screen_width = {"Gameboy": 20, "Gameboy Color": 20, "NES": 32, "Famicom": 32} #In tiles
 
