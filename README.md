@@ -19,7 +19,7 @@ Emu LiveText consists of
 #### Option 1: Using the Github Release (Windows Only)
 1. Download the Github Release (right hand side of the Github Page), and extract the contents.
 1. Download the [BizHawk](https://github.com/TASEmulators/BizHawk/releases) emulator.
-1. *Reccomended:* To launch all components simultaneously with a script, follow the short instructions in *Windows-One-Click-Run-Example.bat* and skip steps 4 - 6.
+1. *Reccomended:* To launch all components simultaneously with a script, follow the short instructions in `Release-Windows-One-Click-Run-Example.bat` and skip steps 4 - 6.
 1. Open your desired rom in Bizhawk, and run `BizHawk_text_dump.lua` found in `game_resources\GAME_TITLE` by drag-and-dropping it into the Bizhawk window.
 1. Launch EmuLiveText.exe and enter the directory to your game's resource folder eg `game_resources\Pokemon_Blue_JP`
 1. Open EmuText.html
@@ -37,7 +37,8 @@ Install [Python](https://www.python.org/downloads/) on your local machine if you
 Each time you press the dump key (Default: G), text will appear in your web browser.
 
 #### Optional Launch Script
-For Windows users, the repo is bundled with a batch file named Windows-One-Click-Run-Example.bat, which allows you to launch each part of Emu LiveText simultaneously.
+For Windows users, the repo is bundled with a batch file named Windows-One-Click-Run-Example.bat, which allows you to launch each part of Emu LiveText simultaneously. 
+*note:* Another File exists called Release-Windows-One-Click-Run.bat, which is only for Github Release users.
 
 Follow the instructions within Windows-One-Click-Run-Example.bat. Now launching this script will directly launch the sever, web client, and Bizhawk with the appropriate ROM and Lua script simultaneously. 
 
