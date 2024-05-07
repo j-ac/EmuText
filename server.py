@@ -216,7 +216,7 @@ def diacritic_table_to_dict(path_to_diacritic_table):
     offset = int(offset_string)
 
     for line in lines:
-        segments = re.findall("[^+=\\n]+", line) # Matches seperated by + = and newlines
+        segments = re.findall("[^+=\\n]+", line) # Matches separated by + = and newlines
         diacritic = segments[0]             # Hex value for a diacritic eg E4 for゛in Pokemon Crystal
         without_diacritic = segments[1]     # Hex value for a character eg CB for てin Pokemon Crystal
         with_diacritic = segments[2]        # Literal character containing diacritic で
@@ -239,7 +239,7 @@ def thingy_table_to_dict(path_to_thingy_table):
     lines = table.splitlines()
 
     for line in lines:
-       split = line.split('=', 1) #Seperate the string into everything which occurs before the first = and everything after it. Split only at most once otherwise '=' can not be encoded
+       split = line.split('=', 1) # Separate the string into everything which occurs before the first = and everything after it. Split only at most once otherwise '=' can not be encoded
        num = split[0]
        character = split[1]
        dictionary[int(num, 16)] = character 
@@ -265,9 +265,9 @@ def generate_text(encoding, diacritics_list, dump, screen_width):
 
     return text
 
-# Generate text for a game which uses tileswapping (tile-swapping is true in meta.json)
-# considers the dump as a list of pointers, which reference tiles in active_sprites
-# determines a UTF-8 character match using the game's tiles.json
+# Generate text for a game which uses tile swapping (ie tile-swapping is true in meta.json)
+# Considers the dump as a list of pointers, which reference tiles in active_sprites
+# Determines a UTF-8 character match using the game's tiles.json
 def generate_text_with_swapping(dump, tileswap_data, screen_width):
     # === GENERATE TEXT ===
     active_sprites = []

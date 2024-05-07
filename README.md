@@ -14,12 +14,12 @@ Emu LiveText consists of
 - The local web page EmuText.html
 
 ### Using Emu LiveText
-**The easiest way to begin with Emu LiveText is by downloading its latest release** found on the **right hand side of the github page**. That way you do not need Python installed to use the Emu LiveText, and you do not have to launch the program from the commandline. More experienced users may prefer to clone the repository, if they do not care about the previous two conveniences. There is currently no Github Release for Linux, so Linux users must clone.
+**The easiest way to begin with Emu LiveText is by downloading its latest release** found on the **right hand side of the github page**. That way you do not need Python installed to use the Emu LiveText, and you do not have to launch the program from the command-line. More experienced users may prefer to clone the repository, if they do not care about the previous two conveniences. There is currently no Github Release for Linux, so Linux users must clone.
 
 #### Option 1: Using the Github Release (Windows Only)
 1. Download the Github Release (right hand side of the Github Page), and extract the contents.
 1. Download the [BizHawk](https://github.com/TASEmulators/BizHawk/releases) emulator.
-1. *Reccomended:* To launch all components simultaneously with a script, follow the short instructions in `Release-Windows-One-Click-Run-Example.bat` and skip steps 4 - 6.
+1. *Recommended:* To launch all components simultaneously with a script, follow the short instructions in `Release-Windows-One-Click-Run-Example.bat` and skip steps 4 - 6.
 1. Open your desired rom in Bizhawk, and run `BizHawk_text_dump.lua` found in `game_resources\GAME_TITLE` by drag-and-dropping it into the Bizhawk window.
 1. Launch EmuLiveText.exe and enter the directory to your game's resource folder eg `game_resources\Pokemon_Blue_JP`
 1. Open EmuText.html
@@ -31,7 +31,7 @@ Install [Python](https://www.python.org/downloads/) on your local machine if you
 1. Clone this repository, and download the [BizHawk](https://github.com/TASEmulators/BizHawk/releases) Emulator.
 2. Launch server.py using a games' resource folder as a positional argument. For example:
 `./server.py game_resources/Pokemon_Blue_JP`. You will see the following prompt: `Waiting for connection to web client.`
-3. To establish a connection, open EmuText.html with a web browser. You should recieve the following prompt on the Python server: `Connection established with web client.`
+3. To establish a connection, open EmuText.html with a web browser. You should receive the following prompt on the Python server: `Connection established with web client.`
 4. To begin seeing text from game, open BizHawk and load the game you wish to play.
 5.  Drag and drop the lua script found in your games' directory within game_resources into BizHawk's window.
 Each time you press the dump key (Default: G), text will appear in your web browser.
@@ -40,15 +40,15 @@ Each time you press the dump key (Default: G), text will appear in your web brow
 For Windows users, the repo is bundled with a batch file named Windows-One-Click-Run-Example.bat, which allows you to launch each part of Emu LiveText simultaneously. 
 *note:* Another File exists called Release-Windows-One-Click-Run.bat, which is only for Github Release users.
 
-Follow the instructions within Windows-One-Click-Run-Example.bat. Now launching this script will directly launch the sever, web client, and Bizhawk with the appropriate ROM and Lua script simultaneously. 
+Follow the instructions within Windows-One-Click-Run-Example.bat. Now launching this script will directly launch the sever, web client, and BizHawk with the appropriate ROM and Lua script simultaneously. 
 
 ## Getting the most out of Emu LiveText
 To make use of instant definition lookups, install [Yomichan](https://foosoft.net/projects/yomichan/). To instantly create Anki flashcards from Yomichan definitions, follow
 [these steps](https://foosoft.net/projects/anki-connect/) from Yomichan's official site.
 
 To change the dump key, open the lua file for the desired console in /lib/. Modify the line `DUMP_KEY = "G"` to your desired key.
-Special characters are case sensitive and must be written begining with a capital letter eg: "Alt", "Shift", "Ctrl" or "Space"
-Be aware that BizHawk uses hotkeys. For instance F will pause the game if used as a dump key. Most keys are unused but can be checked from Config > Hotkeys in Bizhawk.
+Special characters are case sensitive and must be written beginning with a capital letter eg: "Alt", "Shift", "Ctrl" or "Space"
+Be aware that BizHawk uses hotkeys. For instance F will pause the game if used as a dump key. Most keys are unused but can be checked from Config > Hotkeys in BizHawk.
 
 ### Learning More
 * RESOURCES.md is located in /game_resources/, and covers the purpose of each resource file needed to add support for new games
