@@ -68,3 +68,8 @@ Be aware that BizHawk uses hotkeys. For instance F will pause the game if used a
 ## Gallery
 ![demonstration of Emu LiveText in Pokemon TCG2, showing a Surfing Pikachu, and  a demonstration in Legend of Zelda where link receives his sword and Yomichan shows an inline definition for "Alone"](https://github.com/j-ac/EmuText/assets/83185117/4c404bf8-fa04-451b-af1c-f3367b3bb996)
 ![A player getting into a battle in Pokemon Red, a player fighting a hippie in Earthbound Zero](https://github.com/j-ac/EmuText/assets/83185117/9a368abe-4f35-498b-a84b-4e770204dd6b)
+
+## Liscence
+
+This project is licensed under the terms of the **GNU General Public License v3**.
+If you require different licensing terms, please contact me at emutext(at)puku.ca
